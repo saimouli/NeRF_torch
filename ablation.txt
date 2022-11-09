@@ -1,0 +1,19 @@
+ABLATION =
+SUCCESS =
+RUNNING TIME =
+
+Instructions:
+Howdy y'all. Let's keep track of what ablation study we're conducting using this. I'll push this to main, and then for each
+branch we make we can edit this file to describe it (also edit the branch name). This can also serve as a general notes file.
+Additionally, put the success you've had in running your ablation at the top of this file (we need to figure out error functions
+and a way to capture the resulting video), along with the running time. Remember, we're trying to chart what solutions we can
+make to optimally reduce running time without degrading quality.
+
+Here's the nomenclature I'm proposing. We want to initially try ablation studies of making the architecture deeper and shallower.
+Additionally, experimenting with making it wider. Later we may try something with the positional encoding.
+
+For changing the number of layers: ablation_#_of_layers
+For changing the width of layers: ablation_#_of_paremeters_per_layer
+For both: ablation_#_of_layers_#_of_parameters_per_layer
+
+For changing the positional encoding: TBD
