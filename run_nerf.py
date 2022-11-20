@@ -186,9 +186,12 @@ def create_nerf(args):
         embeddirs_fn, input_ch_views = get_embedder(args.multires_views, args.i_embed)
     output_ch = 5 if args.N_importance > 0 else 4
     skips = [4]
+    # this is for coarser model
+    # can pass in depth and width as params,  but I prefer tweaking the NeRF function 
     model = NeRF(D=args.netdepth, W=args.netwidth,
                  input_ch=input_ch, output_ch=output_ch, skips=skips,
                  input_ch_views=input_ch_views, use_viewdirs=args.use_viewdirs).to(device)
+    print("model corase: ", model)
     grad_vars = list(model.parameters())
 
     model_fine = None
@@ -196,8 +199,11 @@ def create_nerf(args):
         model_fine = NeRF(D=args.netdepth_fine, W=args.netwidth_fine,
                           input_ch=input_ch, output_ch=output_ch, skips=skips,
                           input_ch_views=input_ch_views, use_viewdirs=args.use_viewdirs).to(device)
+        print("model fine: ", model_fine)
         grad_vars += list(model_fine.parameters())
 
+    # lambda function stored in a variable can be used by 
+    # ex: test = lambda x: x + 1 and test(2) will give 3
     network_query_fn = lambda inputs, viewdirs, network_fn : run_network(inputs, viewdirs, network_fn,
                                                                 embed_fn=embed_fn,
                                                                 embeddirs_fn=embeddirs_fn,
@@ -422,7 +428,7 @@ def config_parser():
 
     import configargparse
     parser = configargparse.ArgumentParser()
-    parser.add_argument('--config', is_config_file=True, 
+    parser.add_argument('--config', is_config_file=True, default = "/home/saimouli/Desktop/ML_class/NeRF_torch/configs/fern.txt",
                         help='config file path')
     parser.add_argument("--expname", type=str, 
                         help='experiment name')
@@ -539,9 +545,11 @@ def train():
     # Load data
     K = None
     if args.dataset_type == 'llff':
+        # loads poses 
         images, poses, bds, render_poses, i_test = load_llff_data(args.datadir, args.factor,
                                                                   recenter=True, bd_factor=.75,
                                                                   spherify=args.spherify)
+        # last column from the poses matrix
         hwf = poses[0,:3,-1]
         poses = poses[:,:3,:4]
         print('Loaded llff', images.shape, render_poses.shape, hwf, args.datadir)
