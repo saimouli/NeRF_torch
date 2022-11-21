@@ -150,18 +150,28 @@ def plot_gt_traj():
 
     poses = poses[:,:3,:4]
 
+    print("poses len: ", len(poses))
+
     transformation_matrices = np.empty((len(poses), 4, 4))
     for i, camera_pose in enumerate(poses):
         R = np.array(camera_pose[:3,:3])
         p = np.array(camera_pose[:,3])
         transformation_matrices[i] = pt.transform_from(R=R, p=p)
 
+    focal = 4.306292964914568
+
+    sensor_size = np.array([0.036, 0.024])
+    intrinsic_matrix = np.array([
+        [0.05, 0, sensor_size[0] / 2.0],
+        [0, 0.05, sensor_size[1] / 2.0],
+        [0, 0, 1]
+    ])
 
     fig = pv.figure()
     #fig.plot_mesh(mesh_filename)
     for pose in transformation_matrices:
         fig.plot_transform(A2B=pose, s=0.1)
-        #fig.plot_camera(M=M, cam2world=pose, virtual_image_distance=0.1, sensor_size=sensor_size)
+        fig.plot_camera(M=intrinsic_matrix, cam2world=pose, virtual_image_distance=0.1, sensor_size=sensor_size)
     fig.show()
 
 def plot_novel_traj():
@@ -180,7 +190,22 @@ def plot_novel_traj():
     render_poses = np.array(render_poses).astype(np.float32)
     poses = render_poses[:,:3,:4] # Tcam2wld pose
     #poses = poses[:,:3,:4]
+    print("poses len: ", len(poses))
 
+    M = np.array([
+        [focal, 0, 2],
+        [0, focal, 2],
+        [0, 0, 1]
+    ])
+    sensor_size = (1,1)
+
+    # K = np.array([
+    #     [focal, 0, 0.5*W],
+    #     [0, focal, 0.5*H],
+    #     [0, 0, 1]
+    # ])
+
+    # source: https://github.com/dfki-ric/pytransform3d/discussions/148
     transformation_matrices = np.empty((len(poses), 4, 4))
     for i, camera_pose in enumerate(poses):
         R = np.array(camera_pose[:3,:3])
@@ -192,7 +217,7 @@ def plot_novel_traj():
     #fig.plot_mesh(mesh_filename)
     for pose in transformation_matrices:
         fig.plot_transform(A2B=pose, s=0.1)
-        #fig.plot_camera(M=M, cam2world=pose, virtual_image_distance=0.1, sensor_size=sensor_size)
+        fig.plot_camera(M=M, cam2world=pose, virtual_image_distance=0.1, sensor_size=sensor_size)
     fig.show()
 
 
@@ -220,3 +245,4 @@ def render_path_spiral(c2w, up, rads, focal, zdelta, zrate, rots, N):
 
 
 plot_novel_traj()
+#plot_gt_traj()

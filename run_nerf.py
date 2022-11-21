@@ -164,10 +164,15 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
         """
 
         if savedir is not None:
+            print("Saving rendered images")
             rgb8 = to8b(rgbs[-1])
             filename = os.path.join(savedir, '{:03d}.png'.format(i))
             imageio.imwrite(filename, rgb8)
 
+            disp8 = to8b(disps[-1] / np.nanmax(disps[-1]))
+            filename = os.path.join("/home/saimouli/Desktop/ML_class/NeRF_torch/logs/fern_test/renderonly_path_200000_disp/", '{:03d}.png'.format(i))
+            imageio.imwrite(filename, disp8)
+        
 
     rgbs = np.stack(rgbs, 0)
     disps = np.stack(disps, 0)
@@ -673,10 +678,12 @@ def train():
             os.makedirs(testsavedir, exist_ok=True)
             print('test poses shape', render_poses.shape)
 
-            rgbs, _ = render_path(render_poses, hwf, K, args.chunk, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
+            rgbs, disps = render_path(render_poses, hwf, K, args.chunk, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
             print('Done rendering', testsavedir)
             imageio.mimwrite(os.path.join(testsavedir, 'video.mp4'), to8b(rgbs), fps=30, quality=8)
+            imageio.mimwrite(os.path.join("/home/saimouli/Desktop/ML_class/NeRF_torch/logs/fern_test/renderonly_path_200000_disp/", 'disp.mp4'), to8b(disps / np.nanmax(disps)), fps=30, quality=8)
 
+            print("Done rendering")
             return
 
     # Prepare raybatch tensor if batching random rays
@@ -814,7 +821,7 @@ def train():
             print('Done, saving', rgbs.shape, disps.shape)
             moviebase = os.path.join(basedir, expname, '{}_spiral_{:06d}_'.format(expname, i))
             imageio.mimwrite(moviebase + 'rgb.mp4', to8b(rgbs), fps=30, quality=8)
-            imageio.mimwrite(moviebase + 'disp.mp4', to8b(disps / np.max(disps)), fps=30, quality=8)
+            #imageio.mimwrite(moviebase + 'disp.mp4', to8b(disps / np.nanmax(disps)), fps=30, quality=8)
 
             # if args.use_viewdirs:
             #     render_kwargs_test['c2w_staticcam'] = render_poses[0][:3,:4]
