@@ -4,6 +4,8 @@ import numpy as np
 import pytransform3d.transformations as pt
 import pytransform3d.camera as pc
 import pytransform3d.visualizer as pv
+import open3d
+
 
 
 def plot_gt_traj():
@@ -183,18 +185,19 @@ def plot_novel_traj():
     up = np.array([0.0000000e+00, 9.9999988e-01, 4.1797702e-04], dtype=np.float32)
 
     rads = np.array([0.39451256, 0.12918354, 0.04078128])
-    focal = 4.306292964914568
+    #focal = 4.306292964914568
+    focal = 407.5658
     zdelta = 0.23999998569488526
 
-    render_poses = render_path_spiral(c2w, up, rads, focal, zdelta, zrate=.5, rots=2, N=120)
+    render_poses = render_path_circle(c2w, up, rads, focal, zdelta, zrate=.5, rots=2, N=70)
     render_poses = np.array(render_poses).astype(np.float32)
     poses = render_poses[:,:3,:4] # Tcam2wld pose
     #poses = poses[:,:3,:4]
     print("poses len: ", len(poses))
 
     M = np.array([
-        [focal, 0, 2],
-        [0, focal, 2],
+        [focal, 0, 0.5*504],
+        [0, focal, 0.5*378],
         [0, 0, 1]
     ])
     sensor_size = (1,1)
@@ -211,7 +214,6 @@ def plot_novel_traj():
         R = np.array(camera_pose[:3,:3])
         p = np.array(camera_pose[:,3])
         transformation_matrices[i] = pt.transform_from(R=R, p=p)
-
 
     fig = pv.figure()
     #fig.plot_mesh(mesh_filename)
@@ -243,6 +245,16 @@ def render_path_spiral(c2w, up, rads, focal, zdelta, zrate, rots, N):
         render_poses.append(np.concatenate([viewmatrix(z, up, c), hwf], 1))
     return render_poses
 
+def render_path_circle(c2w, up, rads, focal, zdelta, zrate, rots, N):
+    render_poses = []
+    rads = np.array(list(rads) + [1.])
+    hwf = c2w[:,4:5]
+
+    for theta in np.linspace(0., 2. * np.pi * rots, N+1)[:-1]:
+        c = np.dot(c2w[:3,:4], np.array([np.cos(theta), 0.2, 0.5, 1.]) * rads) 
+        z = normalize(c - np.dot(c2w[:3,:4], np.array([0,0,-focal, 1.])))
+        render_poses.append(np.concatenate([viewmatrix(z, up, c), hwf], 1))
+    return render_poses
 
 plot_novel_traj()
 #plot_gt_traj()

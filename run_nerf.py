@@ -17,12 +17,14 @@ from load_llff import load_llff_data
 from load_deepvoxels import load_dv_data
 from load_blender import load_blender_data
 from load_LINEMOD import load_LINEMOD_data
-
+from torch.utils.tensorboard import SummaryWriter
+import tensorflow as tf
+import cv2
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 np.random.seed(0)
 DEBUG = False
-
+VISULAIZE = False
 
 def batchify(fn, chunk):
     """Constructs a version of 'fn' that applies to smaller batches.
@@ -96,7 +98,7 @@ def render(H, W, K, chunk=1024*32, rays=None, c2w=None, ndc=True,
         # special case to render full image
         rays_o, rays_d = get_rays(H, W, K, c2w)
     else:
-        # use provided ray batch
+        # use provided ray batch  in world frame using cam2wld
         rays_o, rays_d = rays
 
     if use_viewdirs:
@@ -157,11 +159,12 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
         if i==0:
             print(rgb.shape, disp.shape)
 
-        """
+    
         if gt_imgs is not None and render_factor==0:
             p = -10. * np.log10(np.mean(np.square(rgb.cpu().numpy() - gt_imgs[i])))
-            print(p)
-        """
+            print("PSNR: ", p)
+            #print("MSE: ", img2mse(rgb.cpu().numpy() , gt_imgs[i]))
+        
 
         if savedir is not None:
             print("Saving rendered images")
@@ -568,6 +571,19 @@ def train():
         i_val = i_test
         i_train = np.array([i for i in np.arange(int(images.shape[0])) if
                         (i not in i_test and i not in i_val)])
+        
+        # visualize train and test images 
+
+        if VISULAIZE:
+            for test_img in i_val:
+                print("i_test: ", test_img)
+                cv2.imshow("test_img", images[test_img])
+                cv2.waitKey(0)
+            
+            for tain_img in i_train:
+                print("i_train: ", tain_img)
+                cv2.imshow("train_img", images[test_img])
+                cv2.waitKey(0)
 
         print('DEFINING BOUNDS')
         if args.no_ndc:
@@ -633,6 +649,7 @@ def train():
         ])
 
     if args.render_test:
+        print("RENDER TEST")
         render_poses = np.array(poses[i_test])
 
     # Create log dir and copy the config file
@@ -680,8 +697,8 @@ def train():
 
             rgbs, disps = render_path(render_poses, hwf, K, args.chunk, render_kwargs_test, gt_imgs=images, savedir=testsavedir, render_factor=args.render_factor)
             print('Done rendering', testsavedir)
-            imageio.mimwrite(os.path.join(testsavedir, 'video.mp4'), to8b(rgbs), fps=30, quality=8)
-            imageio.mimwrite(os.path.join("/home/saimouli/Desktop/ML_class/NeRF_torch/logs/fern_test/renderonly_path_200000_disp/", 'disp.mp4'), to8b(disps / np.nanmax(disps)), fps=30, quality=8)
+            #imageio.mimwrite(os.path.join(testsavedir, 'video.mp4'), to8b(rgbs), fps=30, quality=8)
+            #imageio.mimwrite(os.path.join("/home/saimouli/Desktop/ML_class/NeRF_torch/logs/fern_test/renderonly_path_200000_disp/", 'disp.mp4'), to8b(disps / np.nanmax(disps)), fps=30, quality=8)
 
             print("Done rendering")
             return
@@ -720,7 +737,7 @@ def train():
     print('VAL views are', i_val)
 
     # Summary writers
-    # writer = SummaryWriter(os.path.join(basedir, 'summaries', expname))
+    writer = SummaryWriter(os.path.join(basedir, 'summaries', expname))
     
     start = start + 1
     for i in trange(start, N_iters):
@@ -842,7 +859,7 @@ def train():
     
         if i%args.i_print==0:
             tqdm.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
-        """
+
             print(expname, i, psnr.numpy(), loss.numpy(), global_step.numpy())
             print('iter time {:.05f}'.format(dt))
 
@@ -882,7 +899,7 @@ def train():
                         tf.contrib.summary.image('rgb0', to8b(extras['rgb0'])[tf.newaxis])
                         tf.contrib.summary.image('disp0', extras['disp0'][tf.newaxis,...,tf.newaxis])
                         tf.contrib.summary.image('z_std', extras['z_std'][tf.newaxis,...,tf.newaxis])
-        """
+
 
         global_step += 1
 
