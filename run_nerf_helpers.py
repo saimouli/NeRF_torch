@@ -94,6 +94,7 @@ class NeRF(nn.Module):
             self.output_linear = nn.Linear(W, output_ch)
 
     def forward(self, x):
+        #print("forward data shape: ", x.shape)
         input_pts, input_views = torch.split(x, [self.input_ch, self.input_ch_views], dim=-1)
         h = input_pts
         for i, l in enumerate(self.pts_linears):
@@ -103,7 +104,7 @@ class NeRF(nn.Module):
                 h = torch.cat([input_pts, h], -1)
 
         if self.use_viewdirs:
-            alpha = self.alpha_linear(h)
+            alpha = self.alpha_linear(h) # pass into sigmoid? according to the paper 
             feature = self.feature_linear(h)
             h = torch.cat([feature, input_views], -1)
         

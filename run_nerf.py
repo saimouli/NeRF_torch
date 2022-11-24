@@ -149,11 +149,12 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
     rgbs = []
     disps = []
 
-    t = time.time()
+    
     for i, c2w in enumerate(tqdm(render_poses)):
-        print(i, time.time() - t)
         t = time.time()
         rgb, disp, acc, _ = render(H, W, K, chunk=chunk, c2w=c2w[:3,:4], **render_kwargs)
+        print("Time took to render: {} idx {}".format(i, time.time() - t))
+        t = time.time()
         rgbs.append(rgb.cpu().numpy())
         disps.append(disp.cpu().numpy())
         if i==0:
@@ -161,7 +162,11 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
 
     
         if gt_imgs is not None and render_factor==0:
-            p = -10. * np.log10(np.mean(np.square(rgb.cpu().numpy() - gt_imgs[i])))
+            if torch.is_tensor(gt_imgs[i]):
+                mean_val = np.mean(np.square(rgb.cpu().numpy() - gt_imgs[i].cpu().numpy()))
+            else:
+                mean_val = np.mean(np.square(rgb.cpu().numpy() - gt_imgs[i]))
+            p = -10. * np.log10(mean_val)
             print("PSNR: ", p)
             #print("MSE: ", img2mse(rgb.cpu().numpy() , gt_imgs[i]))
         
@@ -173,6 +178,8 @@ def render_path(render_poses, hwf, K, chunk, render_kwargs, gt_imgs=None, savedi
             imageio.imwrite(filename, rgb8)
 
             disp8 = to8b(disps[-1] / np.nanmax(disps[-1]))
+            if not os.path.exists(os.path.join(savedir,"disp")):
+                os.makedirs(os.path.join(savedir,"disp"))
             filename = os.path.join(savedir,"disp", '{:03d}.png'.format(i))
             imageio.imwrite(filename, disp8)
         
@@ -436,7 +443,7 @@ def config_parser():
 
     import configargparse
     parser = configargparse.ArgumentParser()
-    parser.add_argument('--config', is_config_file=True, default = "/home/saimouli/Desktop/ML_class/NeRF_torch/configs/fern.txt",
+    parser.add_argument('--config', is_config_file=True, default = "/home/saimouli/Documents/Github/NeRF_torch/configs/room.txt",
                         help='config file path')
     parser.add_argument("--expname", type=str, 
                         help='experiment name')
@@ -573,7 +580,8 @@ def train():
                         (i not in i_test and i not in i_val)])
         
         # visualize train and test images 
-
+        print("i_test: ", i_val)
+        print("i_train: ", i_train)
         if VISULAIZE:
             for test_img in i_val:
                 print("i_test: ", test_img)
@@ -730,7 +738,7 @@ def train():
         rays_rgb = torch.Tensor(rays_rgb).to(device)
 
 
-    N_iters = 200000 + 1
+    N_iters = 150000 + 1
     print('Begin')
     print('TRAIN views are', i_train)
     print('TEST views are', i_test)
@@ -860,15 +868,15 @@ def train():
         if i%args.i_print==0:
             tqdm.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
 
-            print(expname, i, psnr.numpy(), loss.numpy(), global_step.numpy())
+            print(expname, i, psnr.detach().cpu().numpy(), loss.detach().cpu().numpy(), global_step)
             print('iter time {:.05f}'.format(dt))
 
-            with tf.contrib.summary.record_summaries_every_n_global_steps(args.i_print):
-                tf.contrib.summary.scalar('loss', loss)
-                tf.contrib.summary.scalar('psnr', psnr)
-                tf.contrib.summary.histogram('tran', trans)
-                if args.N_importance > 0:
-                    tf.contrib.summary.scalar('psnr0', psnr0)
+            #with tf.contrib.summary.record_summaries_every_n_global_steps(args.i_print):
+            writer.add_scalar('loss', loss.detach().cpu().numpy(), i)
+            writer.add_scalar('psnr', psnr.detach().cpu().numpy(),i)
+            writer.add_histogram('trans', trans.detach().cpu().numpy(),i)
+            if args.N_importance > 0:
+                writer.add_scalar('psnr0', psnr0.detach().cpu().numpy(), i)
 
 
             if i%args.i_img==0:
@@ -878,31 +886,32 @@ def train():
                 target = images[img_i]
                 pose = poses[img_i, :3,:4]
                 with torch.no_grad():
-                    rgb, disp, acc, extras = render(H, W, focal, chunk=args.chunk, c2w=pose,
-                                                        **render_kwargs_test)
+                    rgb, disp, acc, extras = render(H, W, K, chunk=args.chunk, c2w=pose, **render_kwargs_test)
+
+                    # rgb, disp, acc, extras = render(H, W, focal, chunk=args.chunk, c2w=pose,
+                    #                                     **render_kwargs_test)
 
                 psnr = mse2psnr(img2mse(rgb, target))
 
-                with tf.contrib.summary.record_summaries_every_n_global_steps(args.i_img):
+                #with tf.contrib.summary.record_summaries_every_n_global_steps(args.i_img):
 
-                    tf.contrib.summary.image('rgb', to8b(rgb)[tf.newaxis])
-                    tf.contrib.summary.image('disp', disp[tf.newaxis,...,tf.newaxis])
-                    tf.contrib.summary.image('acc', acc[tf.newaxis,...,tf.newaxis])
+                writer.add_image('rgb', to8b(rgb.detach().cpu().numpy()), i, dataformats='HWC')
+                writer.add_image('target', to8b(target.detach().cpu().numpy()), i, dataformats='HWC')
+                writer.add_image('disp', to8b(disp.detach().cpu().numpy() / np.nanmax(disp.detach().cpu().numpy())), i, dataformats='HW')
+                writer.add_image('acc', to8b(acc.detach().cpu().numpy()), i, dataformats='HW')
 
-                    tf.contrib.summary.scalar('psnr_holdout', psnr)
-                    tf.contrib.summary.image('rgb_holdout', target[tf.newaxis])
-
+                writer.add_scalar('psnr_holdout', psnr.detach().cpu().numpy(), i)
+                #writer.add_image('rgb_holdout', target[tf.newaxis])
 
                 if args.N_importance > 0:
-
-                    with tf.contrib.summary.record_summaries_every_n_global_steps(args.i_img):
-                        tf.contrib.summary.image('rgb0', to8b(extras['rgb0'])[tf.newaxis])
-                        tf.contrib.summary.image('disp0', extras['disp0'][tf.newaxis,...,tf.newaxis])
-                        tf.contrib.summary.image('z_std', extras['z_std'][tf.newaxis,...,tf.newaxis])
+                    #with tf.contrib.summary.record_summaries_every_n_global_steps(args.i_img):
+                    writer.add_image('rgb0', to8b(extras['rgb0'].detach().cpu().numpy()), i, dataformats='HWC')
+                    writer.add_image('disp0', to8b(extras['disp0'].detach().cpu().numpy() / np.nanmax(extras['disp0'].detach().cpu().numpy())), i, dataformats='HW')
+                    writer.add_image('z_std', to8b(extras['z_std'].detach().cpu().numpy() / np.nanmax(extras['z_std'].detach().cpu().numpy())), i, dataformats='HW')
 
 
         global_step += 1
-
+    writer.close()    
 
 if __name__=='__main__':
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
