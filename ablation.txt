@@ -1,4 +1,4 @@
-ABLATION = ablation_7_layers
+ABLATION = ablation_6_layers
 SUCCESS =
 RUNNING TIME =
 
