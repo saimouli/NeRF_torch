@@ -4,6 +4,7 @@ import imageio
 import json
 import random
 import time
+import datetime
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,6 +23,9 @@ from load_LINEMOD import load_LINEMOD_data
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 print("device name: ", torch.cuda.get_device_name())
+
+#capture time as well
+start_time = time.time()
 
 np.random.seed(0)
 DEBUG = False
@@ -836,7 +840,8 @@ def train():
         if i%args.i_print==0:
 
             #copy console output to file for logging as well
-            exp_log.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
+            seconds = time.time() - start_time
+            exp_log.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()} Time: {datetime.timedelta(seconds=seconds)}\n")
 
             tqdm.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
         """
