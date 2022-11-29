@@ -20,6 +20,9 @@ from load_LINEMOD import load_LINEMOD_data
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+print("device name: ", torch.cuda.get_device_name())
+
 np.random.seed(0)
 DEBUG = False
 
@@ -627,6 +630,11 @@ def train():
     expname = args.expname
     os.makedirs(os.path.join(basedir, expname), exist_ok=True)
     f = os.path.join(basedir, expname, 'args.txt')
+
+    #logging PSNR for every 100th iteration
+    exp_log = os.path.join(basedir, expname, 'exp_log.txt')
+    exp_log = open(exp_log, 'w')
+
     with open(f, 'w') as file:
         for arg in sorted(vars(args)):
             attr = getattr(args, arg)
@@ -826,6 +834,10 @@ def train():
 
     
         if i%args.i_print==0:
+
+            #copy console output to file for logging as well
+            exp_log.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
+
             tqdm.write(f"[TRAIN] Iter: {i} Loss: {loss.item()}  PSNR: {psnr.item()}")
         """
             print(expname, i, psnr.numpy(), loss.numpy(), global_step.numpy())
@@ -870,6 +882,10 @@ def train():
         """
 
         global_step += 1
+
+    #closing log file
+    exp_log.close()
+
 
 
 if __name__=='__main__':
