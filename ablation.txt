@@ -1,4 +1,4 @@
-ABLATION =
+ABLATION = ablation_128_parameters_per_layer
 SUCCESS =
 RUNNING TIME =
 
