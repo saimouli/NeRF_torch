@@ -1,4 +1,4 @@
-ABLATION = ablation_4_layers_no_skip
+ABLATION = ablation_3_layers_no_skip
 SUCCESS =
 RUNNING TIME =
 
