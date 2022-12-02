@@ -65,7 +65,7 @@ def get_embedder(multires, i=0):
 
 # Model
 class NeRF(nn.Module):
-    def __init__(self, D=3, W=256, input_ch=3, input_ch_views=3, output_ch=4, skips=[], use_viewdirs=False):
+    def __init__(self, D=2, W=256, input_ch=3, input_ch_views=3, output_ch=4, skips=[], use_viewdirs=False):
         """ 
         """
         super(NeRF, self).__init__()
