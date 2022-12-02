@@ -1,4 +1,4 @@
-ABLATION = ablation_5_layers_128_parameters_per_layer
+ABLATION = ablation_4_layers_no_skip
 SUCCESS =
 RUNNING TIME =
 
@@ -15,5 +15,6 @@ Additionally, experimenting with making it wider. Later we may try something wit
 For changing the number of layers: ablation_#_of_layers
 For changing the width of layers: ablation_#_of_paremeters_per_layer
 For both: ablation_#_of_layers_#_of_parameters_per_layer
+For changing skip layers: ablation_XYZ + (_no_skip if no skips)
 
 For changing the positional encoding: TBD
