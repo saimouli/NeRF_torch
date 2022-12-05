@@ -89,19 +89,26 @@ ablation_7_layers_128_parameters_per_layer = []
 ablation_128_parameters_per_layer = []
 
 for i in desired_iterations:
-    #ablation_2_layers_no_skip.append((ablations_data["ablation_2_layers_no_skip"][i][1], ablations_data["ablation_2_layers_no_skip"][i][3]))
-    ablation_3_layers_no_skip.append((ablations_data["ablation_3_layers_no_skip"][i][1], ablations_data["ablation_3_layers_no_skip"][i][3]))
-    #ablation_4_layers_no_skip.append((ablations_data["ablation_4_layers_no_skip"][i][1], ablations_data["ablation_4_layers_no_skip"][i][3]))
-    ablation_5_layers.append((ablations_data["ablation_5_layers"][i][1], ablations_data["ablation_5_layers"][i][3]))
-    #ablation_5_layers_128_parameters_per_layer.append((ablations_data["ablation_5_layers_128_parameters_per_layer"][i][1], ablations_data["ablation_5_layers_128_parameters_per_layer"][i][3]))
-    ablation_6_layers.append((ablations_data["ablation_6_layers"][i][1],ablations_data["ablation_6_layers"][i][3]))
-    #ablation_6_layers_128_parameters_per_layer.append((ablations_data["ablation_6_layers_128_parameters_per_layer"][i][1], ablations_data["ablation_6_layers_128_parameters_per_layer"][i][3]))
-    #ablation_7_layers.append((ablations_data["ablation_7_layers"][i][1],ablations_data["ablation_7_layers"][i][3]))
-    #ablation_7_layers_128_parameters_per_layer.append((ablations_data["ablation_7_layers_128_parameters_per_layer"][i][1], ablations_data["ablation_7_layers_128_parameters_per_layer"][i][3]))
-    #ablation_128_parameters_per_layer.append((ablations_data["ablation_128_parameters_per_layer"][i][1],ablations_data["ablation_128_parameters_per_layer"][i][3]))
+    #ablation_2_layers_no_skip.append((ablations_data["ablation_2_layers_no_skip"][i][2], ablations_data["ablation_2_layers_no_skip"][i][3]))
+    ablation_3_layers_no_skip.append((ablations_data["ablation_3_layers_no_skip"][i][2], ablations_data["ablation_3_layers_no_skip"][i][3]))
+    #ablation_4_layers_no_skip.append((ablations_data["ablation_4_layers_no_skip"][i][2], ablations_data["ablation_4_layers_no_skip"][i][3]))
+    ablation_5_layers.append((ablations_data["ablation_5_layers"][i][2], ablations_data["ablation_5_layers"][i][3]))
+    #ablation_5_layers_128_parameters_per_layer.append((ablations_data["ablation_5_layers_128_parameters_per_layer"][i][2], ablations_data["ablation_5_layers_128_parameters_per_layer"][i][3]))
+    ablation_6_layers.append((ablations_data["ablation_6_layers"][i][2],ablations_data["ablation_6_layers"][i][3]))
+    #ablation_6_layers_128_parameters_per_layer.append((ablations_data["ablation_6_layers_128_parameters_per_layer"][i][2], ablations_data["ablation_6_layers_128_parameters_per_layer"][i][3]))
+    #ablation_7_layers.append((ablations_data["ablation_7_layers"][i][2],ablations_data["ablation_7_layers"][i][3]))
+    #ablation_7_layers_128_parameters_per_layer.append((ablations_data["ablation_7_layers_128_parameters_per_layer"][i][2], ablations_data["ablation_7_layers_128_parameters_per_layer"][i][3]))
+    #ablation_128_parameters_per_layer.append((ablations_data["ablation_128_parameters_per_layer"][i][2],ablations_data["ablation_128_parameters_per_layer"][i][3]))
 
 
+"""
 
+TO DO
+
+ADD AXIS LABELS
+RE-SCALE Y AXIS
+
+"""
 fig, ax = plt.subplots()
 plt.xticks(range(1, 12)) #this sets it to increment up to 11.
 plt.yticks(np.arange(0,0.055, 0.005))
