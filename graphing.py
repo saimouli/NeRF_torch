@@ -63,20 +63,6 @@ ablations_data = {}
 for ablation in list_of_ablations:
     ablations_data[ablation] = load_data(ablation)
 
-#print(ablations_data)
-
-#now graph with matplotlib.
-
-#graphing of layer ablations. width per layer same as original paper
-#create graph of loss v time and psnr v time
-
-depth_ablations = [
-    "ablation_3_layers_no_skip",
-    "ablation_5_layers",
-    "ablation_6_layers",
-#    "ablation_128_parameters_per_layer"
-]
-
 #iterations I want to graph
 
 desired_iterations = [
@@ -85,66 +71,114 @@ desired_iterations = [
     100,
     500,
     1000,
-    2000
+    2000 #200,00th iteration
 ]
 
 #depth ablations
+ablation_2_layers_no_skip = []
 ablation_3_layers_no_skip = []
+ablation_4_layers_no_skip = []
 ablation_5_layers = []
 ablation_6_layers = []
+ablation_7_layers = []
 
 #width & depth ablations
 ablation_5_layers_128_parameters_per_layer = []
 ablation_6_layers_128_parameters_per_layer = []
+ablation_7_layers_128_parameters_per_layer = []
 ablation_128_parameters_per_layer = []
 
-'''
-for i in ablations_data:
-    for j in depth_ablations:
-        if i == j:
-            for k in desired_iterations:
-                ablations_data[i][k]
-'''
-
 for i in desired_iterations:
-#    print(ablations_data["ablation_3_layers_no_skip"][i][1])
+    #ablation_2_layers_no_skip.append((ablations_data["ablation_2_layers_no_skip"][i][1], ablations_data["ablation_2_layers_no_skip"][i][3]))
     ablation_3_layers_no_skip.append((ablations_data["ablation_3_layers_no_skip"][i][1], ablations_data["ablation_3_layers_no_skip"][i][3]))
+    #ablation_4_layers_no_skip.append((ablations_data["ablation_4_layers_no_skip"][i][1], ablations_data["ablation_4_layers_no_skip"][i][3]))
     ablation_5_layers.append((ablations_data["ablation_5_layers"][i][1], ablations_data["ablation_5_layers"][i][3]))
+    #ablation_5_layers_128_parameters_per_layer.append((ablations_data["ablation_5_layers_128_parameters_per_layer"][i][1], ablations_data["ablation_5_layers_128_parameters_per_layer"][i][3]))
     ablation_6_layers.append((ablations_data["ablation_6_layers"][i][1],ablations_data["ablation_6_layers"][i][3]))
+    #ablation_6_layers_128_parameters_per_layer.append((ablations_data["ablation_6_layers_128_parameters_per_layer"][i][1], ablations_data["ablation_6_layers_128_parameters_per_layer"][i][3]))
+    ablation_7_layers.append((ablations_data["ablation_7_layers"][i][1],ablations_data["ablation_7_layers"][i][3]))
+    #ablation_7_layers_128_parameters_per_layer.append((ablations_data["ablation_7_layers_128_parameters_per_layer"][i][1], ablations_data["ablation_7_layers_128_parameters_per_layer"][i][3]))
+    #ablation_128_parameters_per_layer.append((ablations_data["ablation_128_parameters_per_layer"][i][1],ablations_data["ablation_128_parameters_per_layer"][i][3]))
 
-#print(ablation_3_layers_no_skip)
-'''
-zip(*ablation_3_layers_no_skip)
-plt.scatter(*zip(*ablation_3_layers_no_skip))
-plt.show()
-'''
 
-'''
-Problem here - y ticks will not show up. Need to space them out evenly but is not working
-
-'''
 
 fig, ax = plt.subplots()
 plt.xticks(range(1, 12)) #this sets it to increment up to 11.
 plt.yticks(np.arange(0,0.055, 0.005))
 
+'''
+y_val = [float(x[0]) for x in ablation_2_layers_no_skip]
+x_val = [y[1] for y in ablation_2_layers_no_skip]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
+ax.scatter(x_val, y_val, label="2 layers", marker="1")
+'''
+
 y_val = [float(x[0]) for x in ablation_3_layers_no_skip]
 x_val = [y[1] for y in ablation_3_layers_no_skip]
 for x in range(len(x_val)):
     x_val[x] = datetime_to_int(x_val[x])
-ax.scatter(x_val, y_val, label="3 layers", linestyle="-") #plot or scatter?
+ax.scatter(x_val, y_val, label="3 layers", marker=".")
+
+'''
+y_val = [float(x[0]) for x in ablation_4_layers_no_skip]
+x_val = [y[1] for y in ablation_4_layers_no_skip]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
+ax.scatter(x_val, y_val, label="4 layers", marker="2")
+'''
 
 y_val = [float(x[0]) for x in ablation_5_layers]
 x_val = [y[1] for y in ablation_5_layers]
 for x in range(len(x_val)):
     x_val[x] = datetime_to_int(x_val[x])
-ax.scatter(x_val, y_val, label="5 layers", linestyle="-") #plot or scatter?
+ax.scatter(x_val, y_val, label="5 layers", marker="o")
+
+"""
+y_val = [float(x[0]) for x in ablation_5_layers_128_parameters_per_layer]
+x_val = [y[1] for y in ablation_5_layers_128_parameters_per_layer]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
+ax.scatter(x_val, y_val, label="5 layers, half width", marker="*")
+"""
 
 y_val = [float(x[0]) for x in ablation_6_layers]
 x_val = [y[1] for y in ablation_6_layers]
 for x in range(len(x_val)):
     x_val[x] = datetime_to_int(x_val[x])
-ax.scatter(x_val, y_val, label="6 layers", linestyle="-") #plot or scatter?
+ax.scatter(x_val, y_val, label="6 layers", marker="s")
+
+"""
+y_val = [float(x[0]) for x in ablation_6_layers_128_parameters_per_layer]
+x_val = [y[1] for y in ablation_6_layers_128_parameters_per_layer]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
+ax.scatter(x_val, y_val, label="6 layers, half width", marker="x")
+"""
+
+"""
+y_val = [float(x[0]) for x in ablation_7_layers]
+x_val = [y[1] for y in ablation_7_layers]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
+ax.scatter(x_val, y_val, label="7 layers", marker="8")
+"""
+
+"""
+y_val = [float(x[0]) for x in ablation_7_layers_128_parameters_per_layer]
+x_val = [y[1] for y in ablation_7_layers_128_parameters_per_layer]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
+ax.scatter(x_val, y_val, label="7 layers, half width", marker="d")
+"""
+
+"""
+y_val = [float(x[0]) for x in ablation_128_parameters_per_layer]
+x_val = [y[1] for y in ablation_128_parameters_per_layer]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
+ax.scatter(x_val, y_val, label="8 layers, half width", marker="h")
+"""
 
 plt.legend()
 plt.show()
