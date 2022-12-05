@@ -192,8 +192,8 @@ def create_nerf(args):
     if args.use_viewdirs:
         embeddirs_fn, input_ch_views = get_embedder(args.multires_views, args.i_embed)
     output_ch = 5 if args.N_importance > 0 else 4
-    skips = [4]
-    model = NeRF(D=args.netdepth, W=args.netwidth,
+    skips = []
+    model = NeRF(D=4, W=args.netwidth,
                  input_ch=input_ch, output_ch=output_ch, skips=skips,
                  input_ch_views=input_ch_views, use_viewdirs=args.use_viewdirs).to(device)
     grad_vars = list(model.parameters())
