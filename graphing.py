@@ -1,4 +1,24 @@
 import matplotlib.pyplot as plt
+import datetime
+import numpy as np
+
+def datetime_to_int(datetime):
+    #datetime here is just a string composed from a datetime obj.
+    #ex: 10:30:56.xxxx
+
+    #first, remove trailing decimal
+    dec_split = datetime.split(".")
+    dec_split = dec_split[0]
+
+    colon_split = dec_split.split(":")
+    hours = int(colon_split[0])
+    minutes = int(colon_split[1])
+    seconds = int(colon_split[2])
+
+    minutes = minutes * (100/60)
+    seconds = seconds * (100/60)
+    time = hours + (minutes / 100) + (seconds/100**2)
+    return time
 
 '''
 Returns dictionary for each file. Each element is a line from the file to then be parsed, in the form of:
@@ -43,7 +63,7 @@ ablations_data = {}
 for ablation in list_of_ablations:
     ablations_data[ablation] = load_data(ablation)
 
-print(ablations_data)
+#print(ablations_data)
 
 #now graph with matplotlib.
 
@@ -82,16 +102,36 @@ for i in ablations_data:
 '''
 
 for i in desired_iterations:
-    print(ablations_data["ablation_3_layers_no_skip"][i][1])
+#    print(ablations_data["ablation_3_layers_no_skip"][i][1])
     ablation_3_layers_no_skip.append((ablations_data["ablation_3_layers_no_skip"][i][1], ablations_data["ablation_3_layers_no_skip"][i][3]))
     ablation_5_layers.append((ablations_data["ablation_5_layers"][i][1], ablations_data["ablation_5_layers"][i][3]))
     ablation_6_layers.append((ablations_data["ablation_6_layers"][i][1],ablations_data["ablation_6_layers"][i][3]))
 
-print(ablation_3_layers_no_skip)
-
+#print(ablation_3_layers_no_skip)
+'''
 zip(*ablation_3_layers_no_skip)
 plt.scatter(*zip(*ablation_3_layers_no_skip))
 plt.show()
+'''
 
-plt.scatter(ablation_3_layers_no_skip)
+'''
+Problem here - y ticks will not show up. Need to space them out evenly but is not working
+
+'''
+
+plt.xticks(range(1, 12)) #this sets it to increment up to 11.
+plt.gca().invert_yaxis()
+
+plt.yticks(np.arange(0,0.05, 0.005))
+#axs.set_yscale("linear")
+
+x_val = [x[0] for x in ablation_3_layers_no_skip]
+y_val = [y[1] for y in ablation_3_layers_no_skip]
+for y in range(len(y_val)):
+    y_val[y] = datetime_to_int(y_val[y])
+
+
+plt.scatter(y_val, x_val, label="3 layers", linestyle="-") #plot or scatter?
+
+plt.legend()
 plt.show()
