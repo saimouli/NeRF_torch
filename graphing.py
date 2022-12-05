@@ -119,19 +119,21 @@ Problem here - y ticks will not show up. Need to space them out evenly but is no
 
 '''
 
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
 plt.xticks(range(1, 12)) #this sets it to increment up to 11.
-plt.gca().invert_yaxis()
+#plt.gca().invert_yaxis()
 
-plt.yticks(np.arange(0,0.05, 0.005))
-#axs.set_yscale("linear")
+plt.yticks(np.arange(0,0.055, 0.005))
 
-x_val = [x[0] for x in ablation_3_layers_no_skip]
-y_val = [y[1] for y in ablation_3_layers_no_skip]
-for y in range(len(y_val)):
-    y_val[y] = datetime_to_int(y_val[y])
+y_val = [float(x[0]) for x in ablation_3_layers_no_skip]
+x_val = [y[1] for y in ablation_3_layers_no_skip]
+for x in range(len(x_val)):
+    x_val[x] = datetime_to_int(x_val[x])
 
 
-plt.scatter(y_val, x_val, label="3 layers", linestyle="-") #plot or scatter?
+plt.scatter(x_val, y_val, label="3 layers", linestyle="-") #plot or scatter?
+#ax1.scatter()
 
 plt.legend()
 plt.show()
